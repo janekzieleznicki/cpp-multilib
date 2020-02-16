@@ -2,16 +2,21 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "clang++ build active file",
-            "command": "/usr/bin/clang++",
+            "label": "cmake build all",
+            "command": "/usr/bin/cmake",
             "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "--build",
+                "${workspaceFolder}/build",
+                "--config","Debug",
+                "--target","all",
+                "--", "-j", "12"
             ],
             "options": {
-                "cwd": "/usr/bin"
+                "cwd": "${workspaceFolder}/build"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ],
