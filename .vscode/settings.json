@@ -72,5 +72,8 @@
             }
         ]
     },
-    "gtest-adapter.debugConfig": []
+    "gtest-adapter.debugConfig": [
+        "GTest (gdb) Launch"
+    ],
+    "gtest-adapter.supportLocation": true
 }

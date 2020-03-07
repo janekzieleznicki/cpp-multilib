@@ -15,7 +15,6 @@ project(CMakeMultitarget)
 hunter_add_package(GTest)
 hunter_add_package(Boost)
 find_package(Boost CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
 
 add_subdirectory(header-lib)
 add_subdirectory(linked-lib)
