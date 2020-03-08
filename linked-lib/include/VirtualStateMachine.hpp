@@ -37,7 +37,7 @@ struct TimeoutEvent final : BaseEvent {
 
 /*============================================================================*/
 enum class StateType { IDLESTATE, WAITINGSTATE };
-struct StateMachine;
+class StateMachine;
 struct BaseState {
   virtual ~BaseState() = default;
   virtual StateType get_type() const = 0;
@@ -99,10 +99,8 @@ class StateMachine {
 public:
   bool timeout{false};
   StateMachine() {
-    states.emplace(StateType::IDLESTATE,
-                   std::move(std::make_unique<IdleState>(*this)));
-    states.emplace(StateType::WAITINGSTATE,
-                   std::move(std::make_unique<WaitingState>(*this)));
+    states.emplace(StateType::IDLESTATE,std::make_unique<IdleState>(*this));
+    states.emplace(StateType::WAITINGSTATE,std::make_unique<WaitingState>(*this));
     current_state = states.at(StateType::IDLESTATE).get();
   }
   /**
@@ -110,7 +108,7 @@ public:
    */
   bool operator()() {
     auto event = (*current_state)();
-    if (event.get()){
+    if (event.get()) {
       handle(*event);
       return true;
     }
@@ -143,33 +141,48 @@ std::unique_ptr<BaseEvent> WaitingState::operator()() const {
 struct Demo {
   StateMachine waiting_machine;
   void operator()() {
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.handle(ReceiveEvent{});
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    while(waiting_machine());
-    while(waiting_machine());
-    while(waiting_machine());
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
     waiting_machine.timeout = true;
-    while(waiting_machine());
-    while(waiting_machine());
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
     waiting_machine.timeout = true;
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
   }
   void benchmark_tranistions() {
     waiting_machine.handle(SendEvent{});
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.handle(ReceiveEvent{});
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
     waiting_machine.timeout = true;
-    while(waiting_machine());
+    while (waiting_machine())
+      ;
   }
   void benchmark_ignored_event() { waiting_machine.handle(ReceiveEvent{}); }
   static void benchmark_construction() {

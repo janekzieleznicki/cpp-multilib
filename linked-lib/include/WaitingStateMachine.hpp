@@ -33,15 +33,13 @@ public:
     auto maybe_event =
         std::visit([](auto statePtr) { return (*statePtr)(); }, currentState);
     return std::visit(overload{
-                          [this](std::monostate &&event) { return false; },
+                          [](std::monostate &&) { return false; },
                           [this](auto &&event) {
-                            handle(event);
+                            this->handle(std::move(event));
                             return true;
                           },
                       },
                       std::move(maybe_event));
-    // std::visit([this](auto statePtr) { handle((*statePtr)()); },
-    //            currentState);
   }
 
   template <template <typename StateMachine> typename State>

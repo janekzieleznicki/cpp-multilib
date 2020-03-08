@@ -16,10 +16,12 @@ add_executable(${PROJECT_NAME}_demo src/WaitingDemo.cpp)
 
 add_executable(variant_compile_size src/CompileSize.cpp)
 target_compile_definitions(variant_compile_size PRIVATE COMPILE_VARIANT)
+target_compile_options(variant_compile_size PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(variant_compile_size PRIVATE StaticFoo)
 
 add_executable(virtual_compile_size src/CompileSize.cpp)
 target_compile_definitions(virtual_compile_size PRIVATE COMPILE_VIRTUAL)
+target_compile_options(virtual_compile_size PRIVATE -Werror -Wall -Wextra)
 target_link_libraries(virtual_compile_size PRIVATE StaticFoo)
 
 
@@ -27,6 +29,7 @@ target_link_libraries(${PROJECT_NAME}_demo PRIVATE StaticFoo benchmark::benchmar
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+target_compile_options(${PROJECT_NAME} PRIVATE -Werror -Wall -Wextra)
 
 add_library(linkedfoo SHARED $<TARGET_OBJECTS:${PROJECT_NAME}>)
 add_library(foostatic STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
