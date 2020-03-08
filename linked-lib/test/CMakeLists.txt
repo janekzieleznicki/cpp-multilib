@@ -5,6 +5,7 @@ find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 add_executable(${PROJECT_NAME} 
 FooTest.cpp
+WaitingSMTest.cpp
 )
 
 

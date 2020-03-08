@@ -3,7 +3,7 @@
 #include <tuple>
 #include <variant>
 
-template <template <typename> typename... States> class MyStateMachine {
+template <template <typename> typename... States> class WaitingStateMachine {
 public:
   template <typename State> void transitionTo() {
     std::visit([](auto statePtr) { statePtr->exit(); }, currentState);
@@ -19,10 +19,10 @@ public:
   }
   std::string trace{};
 private:
-  std::tuple<States<MyStateMachine>...> states{
-      States<MyStateMachine>{*this}...
+  std::tuple<States<WaitingStateMachine>...> states{
+      States<WaitingStateMachine>{*this}...
   };
-  std::variant<States<MyStateMachine> *...> currentState{&std::get<0>(states)};
+  std::variant<States<WaitingStateMachine> *...> currentState{&std::get<0>(states)};
 };
 
 template <typename State> struct TransitionTo {
@@ -45,7 +45,8 @@ struct CloseEvent {
 
 template <typename StateMachine> struct ClosedState;
 template <typename StateMachine> struct OpenState;
-using Door = MyStateMachine<ClosedState, OpenState>;
+
+using Door = WaitingStateMachine<ClosedState, OpenState>;
 template <typename StateMachine = Door> struct ClosedState {
   StateMachine &state_machine;
   void entry() {

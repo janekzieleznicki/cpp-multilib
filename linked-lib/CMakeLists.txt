@@ -1,13 +1,20 @@
 project(StaticFoo)
 
-file(GLOB SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/Foo.cpp)
 file(GLOB HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 
 include_guard(GLOBAL)
 
 add_library(${PROJECT_NAME} OBJECT ${SOURCE_FILES})
 
+
+find_package(benchmark CONFIG REQUIRED)
+add_executable(${PROJECT_NAME}_demo src/WaitingDemo.cpp)
+# target_compile_definitions(${PROJECT_NAME}_demo PRIVATE LOGGING_TRACE)
+target_link_libraries(${PROJECT_NAME}_demo PRIVATE StaticFoo benchmark::benchmark)
+
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 add_library(linkedfoo SHARED $<TARGET_OBJECTS:${PROJECT_NAME}>)
 add_library(foostatic STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
