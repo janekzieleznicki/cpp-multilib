@@ -11,6 +11,18 @@ add_library(${PROJECT_NAME} OBJECT ${SOURCE_FILES})
 find_package(benchmark CONFIG REQUIRED)
 add_executable(${PROJECT_NAME}_demo src/WaitingDemo.cpp)
 # target_compile_definitions(${PROJECT_NAME}_demo PRIVATE LOGGING_TRACE)
+
+
+
+add_executable(variant_compile_size src/CompileSize.cpp)
+target_compile_definitions(variant_compile_size PRIVATE COMPILE_VARIANT)
+target_link_libraries(variant_compile_size PRIVATE StaticFoo)
+
+add_executable(virtual_compile_size src/CompileSize.cpp)
+target_compile_definitions(virtual_compile_size PRIVATE COMPILE_VIRTUAL)
+target_link_libraries(virtual_compile_size PRIVATE StaticFoo)
+
+
 target_link_libraries(${PROJECT_NAME}_demo PRIVATE StaticFoo benchmark::benchmark)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)

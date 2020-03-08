@@ -76,6 +76,7 @@ using WaitingMachine = WaitingStateMachine<IdleState, WaitingState>;
 /*============================================================================*/
 template <typename StateMachine> struct IdleState {
   StateMachine &state_machine_;
+  mutable long long counter{0};
   void entry() { LOG_TRACE("Entering IdleState..." << std::endl); }
   void exit() { LOG_TRACE("Exiting IdleState..." << std::endl); }
   MaybeEvent operator()() {
@@ -88,7 +89,8 @@ template <typename StateMachine> struct IdleState {
     return {};
   }
   Nothing handle(const std::monostate &) const { return {}; }
-  TransitionTo<WaitingState> handle(const SendEvent &) const {
+  TransitionTo<WaitingState> handle(const SendEvent &send_event) const {
+    counter += send_event.a;
     LOG_TRACE("Sending!" << std::endl);
     return {};
   }
@@ -121,8 +123,8 @@ template <typename StateMachine> struct WaitingState {
 };
 /*============================================================================*/
 struct Demo {
+  WaitingMachine waiting_machine;
   void operator()() {
-    WaitingMachine waiting_machine;
     waiting_machine();
     waiting_machine.handle(SendEvent{});
     waiting_machine();
@@ -140,6 +142,20 @@ struct Demo {
     waiting_machine.handle(SendEvent{});
     waiting_machine.timeout = true;
     waiting_machine();
+  }
+  void benchmark_tranistions() {
+    waiting_machine.handle(SendEvent{});
+    waiting_machine();
+    waiting_machine.handle(ReceiveEvent{});
+    waiting_machine();
+    waiting_machine.handle(SendEvent{});
+    waiting_machine();
+    waiting_machine.timeout = true;
+    waiting_machine();
+  }
+  static void benchmark_construction() {
+    WaitingMachine state_machine;
+    state_machine();
   }
 };
 } // namespace variant_sm

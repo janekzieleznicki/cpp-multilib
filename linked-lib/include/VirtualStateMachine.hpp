@@ -49,6 +49,7 @@ struct BaseState {
 /*============================================================================*/
 struct IdleState final : BaseState {
   StateMachine &state_machine_;
+  mutable long long counter{0};
   IdleState(StateMachine &state_machine) : state_machine_{state_machine} {}
   StateType get_type() const override { return StateType::IDLESTATE; }
   void entry() override { LOG_TRACE("Entering IdleState..." << std::endl); }
@@ -61,6 +62,7 @@ struct IdleState final : BaseState {
     switch (event.get_type()) {
     case EventType::SENDEVENT:
       LOG_TRACE("Sending!" << std::endl);
+      counter += static_cast<const SendEvent &>(event).a;
       return StateType::WAITINGSTATE;
     default:
       LOG_TRACE("IdleState Ignoring event!" << std::endl);
@@ -130,9 +132,10 @@ std::unique_ptr<BaseEvent> WaitingState::operator()() const {
   }
   return nullptr;
 }
+/*============================================================================*/
 struct Demo {
+  StateMachine waiting_machine;
   void operator()() {
-    StateMachine waiting_machine;
     waiting_machine();
     waiting_machine.handle(SendEvent{});
     waiting_machine();
@@ -150,6 +153,20 @@ struct Demo {
     waiting_machine.handle(SendEvent{});
     waiting_machine.timeout = true;
     waiting_machine();
+  }
+  void benchmark_tranistions() {
+    waiting_machine.handle(SendEvent{});
+    waiting_machine();
+    waiting_machine.handle(ReceiveEvent{});
+    waiting_machine();
+    waiting_machine.handle(SendEvent{});
+    waiting_machine();
+    waiting_machine.timeout = true;
+    waiting_machine();
+  }
+  static void benchmark_construction() {
+    StateMachine state_machine;
+    state_machine();
   }
 };
 } // namespace virt_sm
