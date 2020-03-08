@@ -26,10 +26,20 @@ using MaybeEvent =
 template <template <typename> typename... States> class WaitingStateMachine {
 public:
   bool timeout{false};
-  void operator()() {
+  /**
+   * Return true if transition occured
+   */
+  bool operator()() {
     auto maybe_event =
         std::visit([](auto statePtr) { return (*statePtr)(); }, currentState);
-    std::visit([this](auto &&event) { handle(event); }, std::move(maybe_event));
+    return std::visit(overload{
+                          [this](std::monostate &&event) { return false; },
+                          [this](auto &&event) {
+                            handle(event);
+                            return true;
+                          },
+                      },
+                      std::move(maybe_event));
     // std::visit([this](auto statePtr) { handle((*statePtr)()); },
     //            currentState);
   }
@@ -106,7 +116,7 @@ template <typename StateMachine> struct WaitingState {
     if (state_machine_.timeout) {
       LOG_TRACE("WaitingState Timer ran out!" << std::endl);
       state_machine_.timeout = false;
-      return ReceiveEvent{};
+      return TimeoutEvent{};
     } else
       return std::monostate{};
   }
@@ -120,39 +130,59 @@ template <typename StateMachine> struct WaitingState {
     LOG_TRACE("Received!" << std::endl);
     return {};
   }
+  TransitionTo<IdleState> handle(const TimeoutEvent &) const {
+    LOG_TRACE("TimedOut!" << std::endl);
+    return {};
+  }
 };
 /*============================================================================*/
 struct Demo {
   WaitingMachine waiting_machine;
   void operator()() {
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.handle(ReceiveEvent{});
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
     waiting_machine.timeout = true;
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
     waiting_machine.timeout = true;
-    waiting_machine();
+    while (waiting_machine())
+      ;
   }
   void benchmark_tranistions() {
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.handle(ReceiveEvent{});
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while (waiting_machine())
+      ;
     waiting_machine.timeout = true;
-    waiting_machine();
+    while (waiting_machine())
+      ;
   }
+  void benchmark_ignored_event() { waiting_machine.handle(ReceiveEvent{}); }
   static void benchmark_construction() {
     WaitingMachine state_machine;
     state_machine();

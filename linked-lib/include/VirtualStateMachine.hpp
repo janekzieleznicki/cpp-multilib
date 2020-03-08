@@ -83,8 +83,9 @@ struct WaitingState final : BaseState {
     switch (event.get_type()) {
     case EventType::RECEIVEEVENT:
       LOG_TRACE("Received!" << std::endl);
-      [[fallthrough]];
+      return StateType::IDLESTATE;
     case EventType::TIMEOUTEVENT:
+      LOG_TRACE("TimedOut!" << std::endl);
       return StateType::IDLESTATE;
     default:
       LOG_TRACE("WaitingState Ignoring event!" << std::endl);
@@ -104,10 +105,16 @@ public:
                    std::move(std::make_unique<WaitingState>(*this)));
     current_state = states.at(StateType::IDLESTATE).get();
   }
-  void operator()() {
+  /**
+   * Return true if transition occured
+   */
+  bool operator()() {
     auto event = (*current_state)();
-    if (event.get())
+    if (event.get()){
       handle(*event);
+      return true;
+    }
+    return false;
   }
   void transition_to(const StateType &state_type) {
     current_state->exit();
@@ -128,7 +135,7 @@ std::unique_ptr<BaseEvent> WaitingState::operator()() const {
   if (state_machine_.timeout) {
     LOG_TRACE("WaitingState Timer ran out!" << std::endl);
     state_machine_.timeout = false;
-    return std::make_unique<ReceiveEvent>();
+    return std::make_unique<TimeoutEvent>();
   }
   return nullptr;
 }
@@ -136,34 +143,35 @@ std::unique_ptr<BaseEvent> WaitingState::operator()() const {
 struct Demo {
   StateMachine waiting_machine;
   void operator()() {
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.handle(ReceiveEvent{});
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
+    while(waiting_machine());
+    while(waiting_machine());
+    while(waiting_machine());
+    while(waiting_machine());
     waiting_machine.timeout = true;
-    waiting_machine();
-    waiting_machine();
-    waiting_machine();
+    while(waiting_machine());
+    while(waiting_machine());
+    while(waiting_machine());
     waiting_machine.handle(SendEvent{});
     waiting_machine.timeout = true;
-    waiting_machine();
+    while(waiting_machine());
   }
   void benchmark_tranistions() {
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.handle(ReceiveEvent{});
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.handle(SendEvent{});
-    waiting_machine();
+    while(waiting_machine());
     waiting_machine.timeout = true;
-    waiting_machine();
+    while(waiting_machine());
   }
+  void benchmark_ignored_event() { waiting_machine.handle(ReceiveEvent{}); }
   static void benchmark_construction() {
     StateMachine state_machine;
     state_machine();

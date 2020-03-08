@@ -26,7 +26,19 @@ static void BM_virtual_transitions(benchmark::State &state) {
     demo.benchmark_tranistions();
 }
 BENCHMARK(BM_virtual_transitions);
-
+/*============================================================================*/
+static void BM_variant_ignored(benchmark::State &state) {
+  auto demo{variant_sm::Demo{}};
+  for (auto _ : state)
+    demo.benchmark_ignored_event();
+}
+BENCHMARK(BM_variant_ignored);
+static void BM_virtual_ignored(benchmark::State &state) {
+  auto demo{virt_sm::Demo{}};
+  for (auto _ : state)
+    demo.benchmark_ignored_event();
+}
+BENCHMARK(BM_virtual_ignored);
 /*============================================================================*/
 static void BM_variant(benchmark::State &state) {
   for (auto _ : state)
@@ -41,17 +53,3 @@ BENCHMARK(BM_virtual);
 /*============================================================================*/
 
 BENCHMARK_MAIN();
-
-// int main() {
-//   LOG_TRACE("\n============================================================\n"
-//             "\nVariant state machine"
-//             "\n============================================================\n");
-//   variant_sm::Demo{}();
-//   LOG_TRACE("\n============================================================\n"
-//             "\nVirtual state machine"
-//             "\n============================================================\n");
-//   virt_sm::Demo{}();
-//   LOG_TRACE(
-//       "\n============================================================\n" <<
-//       std::flush;);
-// }
