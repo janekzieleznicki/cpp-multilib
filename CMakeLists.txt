@@ -1,21 +1,24 @@
 cmake_minimum_required(VERSION 3.16)
-# Setting up dlib as an external package
-# set(HUNTER_PACKAGES Boost GTest)
+project(C++Multilib)
 
-### Hunter snapshot that will be used ###
-include("cmake/HunterGate.cmake")
-HunterGate(
-    # https://github.com/cpp-pm/hunter/releases
-    URL "https://github.com/cpp-pm/hunter/archive/v0.23.251.tar.gz"
-    SHA1 "5659b15dc0884d4b03dbd95710e6a1fa0fc3258d"
-)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-project(CMakeMultitarget)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+  message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+  file(DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.16.1/conan.cmake"
+                "${CMAKE_BINARY_DIR}/conan.cmake"
+                EXPECTED_HASH SHA256=396e16d0f5eabdc6a14afddbcfff62a54a7ee75c6da23f32f7a31bc85db23484
+                TLS_VERIFY ON)
+endif()
 
-hunter_add_package(GTest)
-hunter_add_package(Boost)
-hunter_add_package(benchmark)
-find_package(Boost CONFIG REQUIRED)
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+conan_cmake_run(CONANFILE conanfile.py
+                BASIC_SETUP CMAKE_TARGETS
+                BUILD missing)
+
+find_package(Boost REQUIRED)
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-march=native" COMPILER_SUPPORTS_MARCH_NATIVE)

@@ -8,7 +8,7 @@ include_guard(GLOBAL)
 add_library(${PROJECT_NAME} OBJECT ${SOURCE_FILES})
 
 
-find_package(benchmark CONFIG REQUIRED)
+find_package(benchmark REQUIRED)
 add_executable(${PROJECT_NAME}_demo src/WaitingDemo.cpp)
 # target_compile_definitions(${PROJECT_NAME}_demo PRIVATE LOGGING_TRACE)
 

@@ -1,7 +1,7 @@
 project(foo-tests)
 
 
-find_package(GTest CONFIG REQUIRED)
+find_package(GTest REQUIRED)
 include(GoogleTest)
 add_executable(${PROJECT_NAME} 
 FooTest.cpp
